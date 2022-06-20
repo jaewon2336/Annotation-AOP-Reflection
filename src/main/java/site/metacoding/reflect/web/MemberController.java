@@ -11,6 +11,7 @@ import com.google.gson.Gson;
 
 import site.metacoding.reflect.config.MessageConverter;
 import site.metacoding.reflect.config.ViewResolver;
+import site.metacoding.reflect.config.web.RequestMapping;
 import site.metacoding.reflect.domain.Member;
 import site.metacoding.reflect.util.UtilsLog;
 
@@ -20,7 +21,8 @@ public class MemberController {
 	private static final String TAG = "MemberController : ";
 
 	/*	(GET) /join 요청이 오면 호출	*/
-	public void join(HttpServletRequest req, HttpServletResponse resp) {
+	@RequestMapping("/join")
+	public void join(Member member, HttpServletRequest req, HttpServletResponse resp) {
 		UtilsLog.getInstance().info(TAG, "join()");
 		UtilsLog.getInstance().info(TAG, "Service가 호출되어 회원가입 완료되었습니다.");
 		req.setAttribute("username", "ssar");
@@ -30,6 +32,7 @@ public class MemberController {
 	}
 	
 	/*	(GET) /login 요청이 오면 호출	*/
+	@RequestMapping("/login")
 	public void login(HttpServletRequest req, HttpServletResponse resp) {
 		UtilsLog.getInstance().info(TAG, "login()");
 		UtilsLog.getInstance().info(TAG, "Service가 호출되어 로그인이 완료되었습니다.");
@@ -40,6 +43,7 @@ public class MemberController {
 	}
 	
 	/*	(GET) /findById 요청이 오면 호출	*/
+	@RequestMapping("/findById")
 	public void findById(HttpServletRequest req, HttpServletResponse resp) throws IOException {
 		UtilsLog.getInstance().info(TAG, "findById()");
 		UtilsLog.getInstance().info(TAG, "Service가 호출되어 Member를 찾았습니다.");

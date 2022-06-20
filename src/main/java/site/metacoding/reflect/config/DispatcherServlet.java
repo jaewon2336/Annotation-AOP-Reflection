@@ -1,8 +1,12 @@
 package site.metacoding.reflect.config;
 
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
+import java.lang.reflect.Parameter;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -10,6 +14,8 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import site.metacoding.reflect.config.web.RequestMapping;
+import site.metacoding.reflect.domain.Member;
 import site.metacoding.reflect.util.UtilsLog;
 import site.metacoding.reflect.web.MemberController;
 
@@ -36,20 +42,37 @@ public class DispatcherServlet extends HttpServlet { // 톰캣이 들고있는 �
 
 		// 리플렉션 발동
 		Method[] methods = memberController.getClass().getDeclaredMethods(); 
-		for(Method method : methods) {
-			UtilsLog.getInstance().info(TAG, method.getName());
+		for(Method method : methods) { // memberController가 갖고있는 모든 메서드 순회 (= 리플렉션)
+			Annotation annotation = method.getDeclaredAnnotation(RequestMapping.class); // 리턴타입 : 어노테이션 타입
+			RequestMapping requestMapping = (RequestMapping) annotation;
 			
-			String idf = identifier.replace("/", "");
-			
-			if(idf.equals(method.getName())) { // 요청 주소와 같은 이름이 있으면
-				UtilsLog.getInstance().info(TAG, idf + " 메서드를 실행합니다.");
+			if(requestMapping.value().equals(identifier)) {
+				
 				try {
-					method.invoke(memberController, req, resp);
+					Parameter[] params = method.getParameters();
+					Object[] queue = new Object[params.length];
+					
+					for(int i = 0; i < params.length; i++) { // 해당 메서드가 갖고있는 모든 파라미터 순회
+						
+						if(params[i].getType().equals(HttpServletRequest.class)) { // 1. HttpServletRequest를 찾았다 > req 넣어줘
+							queue[i] = req;
+						} else if (params[i].getType().equals(HttpServletResponse.class)) { // 2. HttpServletResponse를 찾았다 > resp 넣어줘
+							queue[i] = resp;
+						} else { // 3. Member를 찾았다 > 없네? > new해서 넣어줘
+							Class<?> cls = params[i].getType(); // 타입 (= .class)
+							Constructor<?> constructor = cls.getConstructor(); // 생성자
+							queue[i] = constructor.newInstance();
+						}
+					}
+					
+					method.invoke(memberController, queue); // 메서드 실행, 배열을 넣어놓으면 순서대로 착착 파라미터로 들어감
+					
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
+				
+				break;
 			}
-			
 		}
 	}
 
