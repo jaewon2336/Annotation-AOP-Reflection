@@ -25,7 +25,8 @@ public class MemberController {
 	public void join(Member member, HttpServletRequest req, HttpServletResponse resp) {
 		UtilsLog.getInstance().info(TAG, "join()");
 		UtilsLog.getInstance().info(TAG, "Service가 호출되어 회원가입 완료되었습니다.");
-		req.setAttribute("username", "ssar");
+		UtilsLog.getInstance().info(TAG, member.getUsername() + ", " + member.getPassword());
+		req.setAttribute("username", member.getUsername());
 		
 		// 스프링에서 return "main.jsp"; 와 같은것 = AOP 
 		ViewResolver.resolve("main.jsp", req, resp);

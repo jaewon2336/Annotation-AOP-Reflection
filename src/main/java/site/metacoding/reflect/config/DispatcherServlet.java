@@ -1,5 +1,6 @@
 package site.metacoding.reflect.config;
 
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
@@ -61,7 +62,26 @@ public class DispatcherServlet extends HttpServlet { // 톰캣이 들고있는 �
 						} else { // 3. Member를 찾았다 > 없네? > new해서 넣어줘
 							Class<?> cls = params[i].getType(); // 타입 (= .class)
 							Constructor<?> constructor = cls.getConstructor(); // 생성자
-							queue[i] = constructor.newInstance();
+							queue[i] = constructor.newInstance(); // 빈 객체!
+							
+							for (Method m : queue[i].getClass().getDeclaredMethods()) { // getter 3개, setter 3개
+								
+								if(m.getName().startsWith("set")) {
+									
+									String key = m.getName().replace("set", "").toLowerCase(); // Parameter
+									String param = req.getParameter(key);
+									
+									// req.getHeader(); 그 헤더에 Content-Type이 application/x-www이면
+									if (param != null) {
+										m.invoke(queue[i], param);
+									}
+									
+									// Content-Type이 application/json 이면 : @RequestBody로 구분하겠네 어노테이션으로!
+									// BufferedReader br = req.getReader();
+									// String body = br.readLine();
+									// new Gson().fromJson(body, cls);
+								}
+							}
 						}
 					}
 					
